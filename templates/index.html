@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flashcards</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='index.css') }}">
+</head>
+<body>
+    <script>
+        function toggleTranslation() {
+            var translation = document.querySelector('.english-translation');
+            translation.classList.toggle('hidden');
+        };
+    </script>
+    <script>
+        function submitAnswer(correct) {
+            var flashcardId = document.querySelector('.flashcard').dataset.id;
+
+            fetch('/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    flashcard_id: flashcardId,
+                    correct: correct,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update the flashcard with the new data
+                document.querySelector('.dutch-word').textContent = data.flashcard.dutch_word;
+                document.querySelector('.english-translation').textContent = data.flashcard.english_translation;
+                // Update the flashcard id
+                document.querySelector('.flashcard').dataset.id = data.flashcard.id;
+                document.querySelector('.english-translation').classList.add('hidden');
+                // Update the stats
+                document.querySelector('.correct-count').textContent = data.flashcard.correct_count;
+                document.querySelector('.incorrect-count').textContent = data.flashcard.incorrect_count;
+            });
+        }
+    </script>
+    <div class="flashcard" data-id="{{ flashcard.id }}" onclick="toggleTranslation()">        <div class="dutch-word">{{ flashcard.dutch_word }}</div>
+        <div class="english-translation hidden">{{ flashcard.english_translation }}</div>
+    </div>
+    <div class="buttons">
+        <button class="incorrect" onclick="submitAnswer(false)">Incorrect</button>
+        <button class="correct" onclick="submitAnswer(true)">Correct</button>
+    </div>
+    <div class="stats">
+        <div class="correct-count">{{ stats.correct_count }}</div>
+        <div class="incorrect-count">{{ stats.incorrect_count }}</div>
+    </div>
+
+</body>
+</html>
